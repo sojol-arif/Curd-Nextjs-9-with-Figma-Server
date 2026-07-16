@@ -28,24 +28,24 @@ const JWKS = createRemoteJWKSet(
 
 const verifyToken = async (req, res, next) => {
   const authHeader = await req?.headers.authorization;
-  console.log(authHeader);
+  //console.log(authHeader, 'authHeader from backend');
 
   if (!authHeader) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized: No authorization header provided" });
   }
   const token = await authHeader.split(" ")[1];
-  console.log(token);
+  //console.log(token, 'token from backend');
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized: Invalid token" });
   }
 
-
   try {
-    const { payload } = await jose.jwtVerify(token, JWKS)
-    console.log(payload);
+    const { payload } = await jwtVerify(token, JWKS)
+    //console.log(payload, 'payload from backend');
     next()
   } catch (error) {
-    return res.status(403).json({ message: "Forbidden" });
+    console.log(error, 'error from backend');
+    return res.status(403).json({ message: "Forbidden: Invalid token" });
   }
 
 }
@@ -68,7 +68,7 @@ async function run() {
       const destination = req.body;
       const result = await destinationCollection.insertOne(destination);
       res.json(result);
-      console.log(result);
+      console.log(result, 'destination created');
     })
 
     app.get('/destination/:id', verifyToken, async (req, res) => {
